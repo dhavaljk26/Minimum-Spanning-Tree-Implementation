@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <queue>
-#include <iostream>
+#include <math.h>
 using namespace std;
 
 struct node
@@ -14,8 +14,6 @@ struct node
     int degree;                     //Number of children of the node
     bool mark;                      //Node is marked or not
 };
-
-struct node *A[20];
 
 struct fibonacci_heap
 {
@@ -40,19 +38,19 @@ void traverse_list(struct node *p)
         return;
     struct node *t = p;
 
-    printf("vfdvf ");
+    printf("TRAVERSE ");
     do
     {
         printf("%d(%d %d) --->",t->key,t->left->key,t->right->key);
         t = t->right;
     }while(t != p);
-        printf("%d(%d %d) --->",t->key,t->left->key,t->right->key);
-    printf(" cdscd\n");
+    //    printf("%d(%d %d) --->",t->key,t->left->key,t->right->key);
+    printf("\n");
 }
 
 void insert_node_in_list(struct node *head, struct node *x)
 {
-    printf("INSIDE - ");
+    // printf("INSIDE - ");
     struct node *t;
     t = head->left;
 
@@ -62,7 +60,7 @@ void insert_node_in_list(struct node *head, struct node *x)
     x->right    = head;
     x->left     = t;    
 
-    printf("AFTER  %d %d %d\n",x->key, head->key, t->key);
+    // printf("AFTER  %d %d %d\n",x->key, head->key, t->key);
 }
 
 
@@ -98,7 +96,7 @@ void print_fibonacci_heap(struct fibonacci_heap *ptr)
         printf("Traversing list with head having key = %d :",temp->key);
         do
         {
-            printf(" %d(%c)[l-%d r-%d] ->",temp->key, (temp->mark?'*':' '), temp->left->key, temp->right->key);
+            printf(" %d(%c) ->",temp->key, (temp->mark?'*':' '));
             if(temp->child)
                 q.push(temp->child);
             temp = temp->right;
@@ -108,6 +106,49 @@ void print_fibonacci_heap(struct fibonacci_heap *ptr)
     }
     printf("Min - %d\n",ptr->min->key);
     printf("----------------------------------------------------------------------------------------------------------------\n\n");
+}
+
+
+struct node * find(struct fibonacci_heap *ptr, int k)
+{
+   
+    if(ptr->min == NULL)
+    {
+        printf("Find called on Empty Heap\n");
+        return NULL;
+    }
+
+    struct node *x;
+    queue<struct node *> q;
+
+    q.push(ptr->min);
+
+    while(!q.empty())
+    {
+        x = q.front();
+        q.pop();
+
+        if(x == NULL)
+            break;
+        struct node *temp;
+        temp = x;
+        //if(temp->parent)
+            // printf("Parent of %d is %d\n",temp->key,temp->parent->key);
+        // printf("Traversing list with head having key = %d :",temp->key);
+        do
+        {
+            if(temp->key == k)
+                return temp;
+            // printf(" %d(%c)[l-%d r-%d] ->",temp->key, (temp->mark?'*':' '), temp->left->key, temp->right->key);
+            if(temp->child)
+                q.push(temp->child);
+            temp = temp->right;
+        }while(temp!=x);
+
+        printf("\n");
+    }
+    // printf("Min - %d\n",ptr->min->key);
+    // printf("----------------------------------------------------------------------------------------------------------------\n\n");
 }
 
 void link(struct fibonacci_heap *H, struct node *y, struct node *x)
@@ -133,7 +174,9 @@ void link(struct fibonacci_heap *H, struct node *y, struct node *x)
 
 void consolidate(struct fibonacci_heap *H)
 {
-    for(int i=0;i<20;i++)
+    int max = log2(H->n) + 1;
+    struct node *A[max];
+    for(int i=0;i<max;i++)
     {
         A[i] = NULL;
     }
@@ -143,8 +186,8 @@ void consolidate(struct fibonacci_heap *H)
     
     w = visited = H->min;
 
-    printf("check  a inside consolidate\n");
-    print_fibonacci_heap(H);
+    // printf("check  a inside consolidate\n");
+    // print_fibonacci_heap(H);
     do
     {
         if(w == NULL)
@@ -153,14 +196,14 @@ void consolidate(struct fibonacci_heap *H)
         x = w;
         d = x->degree;
 
-        printf("check b %p %d %d\n",w,w->key,d);
+        // printf("check b %p %d %d\n",w,w->key,d);
 
 
-        while(A[d])
+        while(A[d] && A[d]!=x)
         {
             y = A[d];
 
-            printf("check c %p %p %d %d %d\n",x,y,x->key,y->key,d);    
+            // printf("check c %p %p %d %d %d\n",x,y,x->key,y->key,d);    
             if(x->key > y->key)
                 swap(x, y);    
             
@@ -169,21 +212,21 @@ void consolidate(struct fibonacci_heap *H)
 
             link(H, y, x);
 
-            printf("check d %p %p %d %d %d\n",x,y,x->key,y->key,d);
+            // printf("check d %p %p %d %d %d\n",x,y,x->key,y->key,d);
             A[d] = NULL;
             d++;    
         }
 
         A[d] = x;
         
-        printf("check e %p %d %d %d\n",x,x->key,x->left->key,x->right->key);
+        // printf("check e %p %d %d %d\n",x,x->key,x->left->key,x->right->key);
 
         w = x->right;
     }while(w != visited);
 
     H->min = NULL;
 
-    for(int i=0;i<20;i++)
+    for(int i=0;i<max;i++)
     {
         if(A[i])
         {
@@ -209,18 +252,14 @@ void consolidate(struct fibonacci_heap *H)
 
 void cut(struct fibonacci_heap *H, struct node *x, struct node *y)
 {
-    struct node *temp;
-    temp = y->child;
     
-    while(temp->key != x->key)
-    {
-        temp = temp->right;
-    }
-
-    x = temp; 
-
     x->left->right = x->right;
     x->right->left = x->left;
+
+    if(y->child == x)
+        y->child = x->right;
+    if(x == x->right)
+        y->child = NULL;
 
     y->degree -= 1;
 
@@ -301,28 +340,28 @@ int extract_min(struct fibonacci_heap *H)
     z = H->min;
     it = z->child;
    
-    printf("check 1\n");
+    // printf("check 1\n");
     for(int i=0; i < z->degree; i++ )
     {
-        printf("wth - ");
-        traverse_list(z);
-        printf("extra %d %d\n",it->key,i);    
+        // printf("wth - ");
+        // traverse_list(z);
+        // printf("extra %d %d\n",it->key,i);    
         next = it->right;
 
         temp = (struct node *)malloc(sizeof(struct node));
         copy(temp, it);
         temp->parent = NULL;
-        printf("zz %d zz\n",temp->key);
+        // printf("zz %d zz\n",temp->key);
         insert_node_in_list(z, temp);
 
-        traverse_list(z);
+        // traverse_list(z);
         //Delete node it
-        it->left->right = it->right;
-        it->right->left = it->left;
+        // it->left->right = it->right;
+        // it->right->left = it->left;
     
         it = next;
     }
-    printf("check 2\n");
+    // printf("check 2\n");
     
 
     //Delete node z
@@ -350,22 +389,32 @@ int extract_min(struct fibonacci_heap *H)
 
 void decrease_key(struct fibonacci_heap *H, struct node *x, int k)
 {
+    if(x==NULL)
+    {
+        printf("Element not found\n");
+        return;    
+    }
     if(k > x->key)
     {
         printf("New key is greater than current key\n");
         return;
     }
 
+    printf("FOUND %d %p\n",x->key,x);
     x->key = k;
 
     struct node *y;
     y = x->parent;
 
+    printf("C 1 %d \n", x->key);
     if(y && x->key < y->key)
     {
+        printf("C 2 %d %d\n", x->key, y->key);
+
         cut(H, x, y);
         cascading_cut(H, y);        
     }
+    printf("C 3 %d\n", x->key);
 
     if(x->key < H->min->key)
         H->min = x;
@@ -379,8 +428,8 @@ int main()
 
     while(1)
     {
-        int x, y;
-       // printf("1-insert 2-extract min 3-decrease key\n");
+        int x, y, z;
+       // printf("1-insert 2-extract min 3-decrease key 4-print\n");
         scanf("%d",&x);
 
         if(x==1)
@@ -394,12 +443,17 @@ int main()
         }
         else if(x==3)
         {
+            scanf("%d %d",&y,&z);
 
+            decrease_key(heap, find(heap, y), z);
+        }
+        else if(x==4)
+        {
+            print_fibonacci_heap(heap);
         }
         else
             return 0;
 
-        print_fibonacci_heap(heap);
     }
     
     return 0;
