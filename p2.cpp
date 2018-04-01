@@ -16,6 +16,8 @@ int main(){
         v[b].push_back(make_pair(a,w));
     }
 
+    clock_t start = clock();
+
     done[1]=1;
     priority_queue<pair<int,pair<int,int> > >pq;
 
@@ -27,6 +29,8 @@ int main(){
         pq.push(p);
     }
     
+    printf("MST Traversal Edges -\n");
+
     long long sum=0;
     int cnt=1;
     while(cnt<n){
@@ -38,6 +42,7 @@ int main(){
         pq.pop();
         done[p.second.second]=1;
         sum+=-p.first;
+        printf("%d %d\n",p.second.first,p.second.second);
         int node=p.second.second;
         for (int i=0;i<v[node].size();i++){
             p.first=-v[node][i].second;
@@ -48,5 +53,10 @@ int main(){
         cnt++;
     }
 
-    cout<<"Mst is "<<sum<<endl;
+    cout<<"The sum of all edges in MST is "<<sum<<endl;
+
+    clock_t stop = clock();
+    double elapsed = (double)(stop - start) * 1000.0 / CLOCKS_PER_SEC;
+    printf("Time elapsed in ms: %f\n", elapsed);
+
 }

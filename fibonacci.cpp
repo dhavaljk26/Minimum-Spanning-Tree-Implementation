@@ -4,6 +4,7 @@
 #include <math.h>
 #include <vector>
 #include <climits>
+#include <time.h>
 using namespace std;
 
 vector< pair<int, int> > G[100005];
@@ -574,8 +575,12 @@ int main()
         G[y].push_back(make_pair(x, w));
     }
 
+    clock_t start = clock();
     prim(G, v, 1);
+    clock_t stop = clock();
 
+    double elapsed = (double)(stop - start) * 1000.0 / CLOCKS_PER_SEC;
+    printf("Time elapsed in ms: %f\n", elapsed);
 
     return 0;
 }
