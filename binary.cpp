@@ -13,6 +13,16 @@ struct heap{
 
 int sz=0;
 
+
+
+void print(){
+    printf("\nPrinting\n");
+    for(int i=1;i<=sz;i++){
+        printf("%d\n",h[i].val);
+    }
+    printf("\n");
+}
+
 void heapify(int node){
     if(node==1){
         return ;
@@ -31,6 +41,7 @@ void insert(int v,int t,int f){
     h[sz].to=t;
     h[sz].from=f;
     heapify(sz);
+    //print();
 }
 
 pair<int,pair<int,int> >getmin(){
@@ -48,12 +59,14 @@ void recurse(int node){
             swap(h[node],h[l]);
             return ;
         }
+        return ;
     }
 
     if(h[node].val <= h[l].val && h[node].val<=h[r].val)
     return ;
 
     if(h[l].val<=h[r].val){
+        
         swap(h[node],h[l]);
         recurse(l);
     }
@@ -64,11 +77,14 @@ void recurse(int node){
     }
 }
 
+
 void deletemin(){
     swap(h[sz],h[1]);
     h[sz].val=-1;
     sz--;
+    //print();
     recurse(1);
+    //print();
 }
 
 int main(){
@@ -90,6 +106,23 @@ int main(){
         insert(v[1][i].second,1,v[1][i].first);
     }
 
+    /*for (int i=0;i<n;i++){
+        int choice;
+        scanf("%d",&choice);
+        if(choice==1){
+            int x;
+            scanf("%d",&x);
+            insert(x,1,2);
+        }
+        else{
+            pair<int,pair<int,int> >p=getmin();
+            printf("min is %d\n",p.first);
+            deletemin();
+        }
+    }*/
+
+    clock_t start = clock();
+    
     int cnt=1;
     long long ans=0;
     done[1]=1;
@@ -115,6 +148,11 @@ int main(){
         cnt++;
     }
 
-    printf("Sum is %lld\n",ans);
+    clock_t stop = clock();
+
+    printf("COST = %lld\n",ans);
+
+    double elapsed = (double)(stop - start) * 1000.0 / CLOCKS_PER_SEC;
+    printf("Time elapsed in ms: %f\n", elapsed);
 
 }

@@ -1,14 +1,12 @@
-#include <iostream>
-#include <cstdlib>
+#include<bits/stdc++.h>
 using namespace std;
 
-
-
-    
+vector< pair<int, int> > G[100005];
+int done[100005];
 
 struct node
 {
-    int n;
+    pair<int,pair<int,int> >n;
     int degree;
     node* parent;
     node* child;
@@ -26,7 +24,7 @@ class BinomialHeap
     
         node* Initializeheap();
         int Binomial_link(node*, node*);
-        node* Create_node(int);
+        node* Create_node(pair<int,pair<int,int> > );
         node* Union(node*, node*);
         node* Insert(node*, node*);
         node* Merge(node*, node*);
@@ -63,7 +61,7 @@ int BinomialHeap::Binomial_link(node* y, node* z)
 }
 
 
-node* BinomialHeap::Create_node(int k)
+node* BinomialHeap::Create_node(pair<int,pair<int,int> >k)
 {
     node* p = new node;
     p->n = k;
@@ -186,7 +184,7 @@ int BinomialHeap::Display(node* H)
     p = H;
     while (p != NULL)
     {
-        cout<<p->n;
+        //cout<<p->n;
         if (p->sibling != NULL)
             cout<<"-->";
         p = p->sibling;
@@ -205,13 +203,13 @@ node* BinomialHeap::Extract_Min(node* H1)
         cout<<"Nothing to Extract"<<endl;
         return x;
     }
-    int min = x->n;
+    int min = x->n.first;
     node* p = x;
     while (p->sibling != NULL)
     {
-        if ((p->sibling)->n < min)
+        if ((p->sibling)->n.first < min)
         {
-            min = (p->sibling)->n;
+            min = (p->sibling)->n.first;
             t = p;
             x = p->sibling;
         }
@@ -254,7 +252,7 @@ node* BinomialHeap::Search(node* H, int k)
 {
     node* x = H;
     node* p = NULL;
-    if (x->n == k)
+    if (x->n.first == k)
     {
         p = x;
         return p;
@@ -279,19 +277,19 @@ int BinomialHeap::Decrease_key(node* H, int i, int k)
         cout<<"Invalid choice of key"<<endl;
         return 0;
     }
-    if (k > p->n)
+    if (k > p->n.first)
     {
         cout<<"Error!! New key is greater than current key"<<endl;
         return 0;
     }
-    p->n = k;
+    p->n.first = k;
     y = p;
     z = p->parent;
-    while (z != NULL && y->n < z->n)
+    while (z != NULL && y->n.first < z->n.first)
     {
-        temp = y->n;
-        y->n = z->n;
-        z->n = temp;
+        temp = y->n.first;
+        y->n.first = z->n.first;
+        z->n.first = temp;
         y = z;
         z = z->parent;
     }
@@ -316,34 +314,82 @@ int BinomialHeap::Delete(node* H, int k)
 BinomialHeap bh;
 node* p;
 node *Hnode;
-void getMin()
+int ins_count = 0;
+
+pair<int,pair<int,int> > getMin()
 {
     p = bh.Extract_Min(Hnode);
-            Hnode=bh.H;
-            if (p != NULL)
-                cout<<"The node with minimum key: "<<p->n<<endl;
-            else
-                cout<<"Heap is empty"<<endl;
-}
-
-void insert()
-{   int m;
-    cout<<"Enter the element to be inserted: ";
-            cin>>m;
-            p = bh.Create_node(m);
-            Hnode = bh.Insert(Hnode, p);
+    Hnode=bh.H;
+    return p->n;
 }
 
 
+struct node * insert_node(pair<int,pair<int,int> >k)
+{   
+    ins_count++;
+    p = bh.Create_node(k);
+    Hnode = bh.Insert(Hnode, p);
+    return p;
+}
 
 int main()
 {
-    Hnode = bh.Initializeheap();
-    insert();
-    insert();
-    insert();
-    getMin();
-    getMin();
-    getMin();
+    int v, e, x, y, w, i;
+
+    scanf("%d %d",&v, &e);
+
+    for(int i = 0; i<e; i++)
+    {
+        scanf("%d%d%d",&x,&y,&w);
+
+        G[x].push_back(make_pair(y, w));
+        G[y].push_back(make_pair(x, w));
+    }
+
+
+    clock_t start = clock();
+
+    done[1]=1;
+    int cnt=1;
+
+    for (int i=0;i<G[1].size();i++){
+        insert_node(make_pair(G[1][i].second,make_pair(1,G[1][i].first)));
+    }
+
+    int weight=0;
+
+    while(cnt<v){
+        pair<int,pair<int,int> >p=getMin();
+        while(done[p.second.second]){
+            p=getMin();
+        }
+
+        weight+=p.first;
+
+        int node=p.second.second;
+
+        for (int i=0;i<G[node].size();i++){
+            if(!done[G[node][i].first]){
+                insert_node(make_pair(G[node][i].second,make_pair(node,G[node][i].first)));
+            }
+        }
+        cnt++;
+
+    }
+    
+    clock_t stop = clock();
+
+    double elapsed = (double)(stop - start) * 1000.0 / CLOCKS_PER_SEC;
+    printf("Time elapsed in ms: %f\n", elapsed);
+
+    printf("COST=%d\n",weight);
+
+//    Hnode = bh.Initializeheap();
+//    insert();
+//    insert();
+//    insert();
+//    getMin();
+//    getMin();
+//    getMin();
     return 0;
 }

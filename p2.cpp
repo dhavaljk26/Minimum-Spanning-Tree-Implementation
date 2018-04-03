@@ -42,7 +42,7 @@ int main(){
         pq.pop();
         done[p.second.second]=1;
         sum+=-p.first;
-        printf("%d %d\n",p.second.first,p.second.second);
+        //printf("%d %d\n",p.second.first,p.second.second);
         int node=p.second.second;
         for (int i=0;i<v[node].size();i++){
             p.first=-v[node][i].second;
